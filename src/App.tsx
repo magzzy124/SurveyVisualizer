@@ -9,6 +9,7 @@ import {
   Legend,
   Bar,
   Cell,
+  ResponsiveContainer,
 } from "recharts";
 
 function App() {
@@ -25,24 +26,29 @@ function App() {
           return textarea.value;
         };
 
-        const organizedData = data.results.reduce(
-          (acc, question) => {
-            question.category = decodeHtmlEntities(question.category);
-            if (!acc.categories[question.category]) {
-              acc.categories[question.category] = [];
-            }
-            acc.categories[question.category].push(question);
+        const organizedData = data.results
+          .map((question) => {
+            question.question = decodeHtmlEntities(question.question); // Decode HTML entities in questions
+            return question;
+          })
+          .reduce(
+            (acc, question) => {
+              question.category = decodeHtmlEntities(question.category);
+              if (!acc.categories[question.category]) {
+                acc.categories[question.category] = [];
+              }
+              acc.categories[question.category].push(question);
 
-            if (!acc.difficulties[question.difficulty]) {
-              acc.difficulties[question.difficulty] = [];
-            }
-            acc.difficulties[question.difficulty].push(question);
+              if (!acc.difficulties[question.difficulty]) {
+                acc.difficulties[question.difficulty] = [];
+              }
+              acc.difficulties[question.difficulty].push(question);
 
-            console.log(acc);
-            return acc;
-          },
-          { categories: {}, difficulties: {} },
-        );
+              return acc;
+            },
+            { categories: {}, difficulties: {} },
+          );
+        console.log(organizedData);
         setQuestions(organizedData);
       });
   }, []);
@@ -64,7 +70,7 @@ function App() {
       >
         <h1>Survey Visualizer</h1>
       </header>
-      <main
+      <div
         style={{
           display: "flex",
           flexDirection: "column",
@@ -89,7 +95,16 @@ function App() {
         </section>
         <section style={{ marginBottom: "30px", width: "80%" }}>
           <h3>Filtered Questions</h3>
-          <ul style={{ listStyle: "none", padding: 0 }}>
+          <ul
+            style={{
+              listStyle: "none",
+              padding: 0,
+              maxHeight: "300px",
+              overflowY: "scroll",
+              border: "1px solid #ddd",
+              borderRadius: "5px",
+            }}
+          >
             {selectedCategory
               ? questions.categories?.[selectedCategory]?.map((q, idx) => (
                   <li
@@ -116,55 +131,55 @@ function App() {
         </section>
         <section style={{ marginBottom: "30px", width: "80%" }}>
           <h2>Questions by Category</h2>
-          <BarChart
-            width={800}
-            height={600}
-            layout="vertical"
-            data={Object.keys(questions.categories || {}).map((key) => ({
-              name: key,
-              questions: questions.categories[key].length,
-            }))}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" />
-            <YAxis dataKey="name" type="category" width={yAxisWidth} />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="questions" fill="#8884d8" />
-          </BarChart>
+          <ResponsiveContainer width="100%" height={600}>
+            <BarChart
+              layout="vertical"
+              data={Object.keys(questions.categories || {}).map((key) => ({
+                name: key,
+                questions: questions.categories[key].length,
+              }))}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" />
+              <YAxis dataKey="name" type="category" width={yAxisWidth} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="questions" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
         </section>
-        <section style={{ width: "80%" }}>
+        <section style={{ width: "80%", maxWidth: "600px" }}>
           <h2>Questions by Difficulty</h2>
-          <BarChart
-            width={600}
-            height={300}
-            data={Object.keys(questions.difficulties || {}).map((key) => ({
-              name: key,
-              questions: questions.difficulties[key].length,
-            }))}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="questions">
-              {["easy", "medium", "hard"].map((difficulty, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={
-                    difficulty === "easy"
-                      ? "green"
-                      : difficulty === "medium"
-                        ? "yellow"
-                        : "red"
-                  }
-                />
-              ))}
-            </Bar>
-          </BarChart>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={Object.keys(questions.difficulties || {}).map((key) => ({
+                name: key,
+                questions: questions.difficulties[key].length,
+              }))}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="questions">
+                {["easy", "medium", "hard"].map((difficulty, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      difficulty === "easy"
+                        ? "green"
+                        : difficulty === "medium"
+                          ? "yellow"
+                          : "red"
+                    }
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </section>
-      </main>
+      </div>
     </div>
   );
 }
