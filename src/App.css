@@ -44,3 +44,84 @@
 main {
   width: fit-content;
 }
+
+/* Remove focus outline/box-shadow from Recharts SVG/chart wrapper so
+   clicking the chart doesn't show a white border in some browsers. */
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-responsive-container,
+.recharts-responsive-container *,
+svg,
+svg:focus,
+svg:focus-visible,
+.recharts-wrapper:focus,
+.recharts-responsive-container:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prefer not to globally disable focus outlines for accessibility; this
+   targets only chart/visualization elements. */
+
+/* Styles for the filtered questions list */
+.filtered-list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-height: 300px;
+  overflow: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: #242424; /* match site background */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  max-width: 680px; /* limit width so it doesn't get too wide */
+}
+
+.filtered-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: background-color 150ms, transform 120ms;
+  background: #2b2b2b; /* slightly lighter than popup */
+}
+.filtered-item:last-child {
+  border-bottom: none;
+}
+.filtered-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+  transform: translateY(-1px);
+}
+.filtered-item .index {
+  min-width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #1f1f1f; /* badge slightly darker */
+  color: #e6eef8;
+  font-weight: 700;
+}
+.filtered-item .question-text {
+  flex: 1 1 auto;
+  color: #e6eef8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Nice thin custom scrollbar (dark) */
+.filtered-list::-webkit-scrollbar {
+  width: 8px;
+}
+.filtered-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.filtered-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
