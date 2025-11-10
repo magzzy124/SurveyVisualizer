@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import PopupTable from "./components/PopupTable";
-import decodeHtmlEntities from "./assets/utils/decodeHtmlEntities";
+import decodeHtmlEntities from "./utils/decodeHtmlEntities";
 
 function App() {
   const [questions, setQuestions] = useState<QuestionsIndex>({
@@ -82,46 +82,55 @@ function App() {
     setPopupHeader(question.category || "Question");
     setPopupInitialExpandedIndex(0);
   };
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const fetchQuestions = async () => {
+    setFetchError(null);
+    try {
+      const res = await fetch("https://opentdb.com/api.php?amount=50");
+      if (!res.ok) {
+        throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
+
+      const results = (data as { results?: Question[] })?.results || [];
+
+      const organizedData = results
+        .map((q: Question) => {
+          const questionText = q.question ? decodeHtmlEntities(q.question) : "";
+          return { ...(q as Question), question: questionText } as Question;
+        })
+        .reduce(
+          (acc: QuestionsIndex, question: Question) => {
+            const category = question.category || "";
+            const difficulty = question.difficulty || "";
+
+            if (!acc.categories[category]) acc.categories[category] = [];
+            acc.categories[category].push(question);
+
+            if (!acc.difficulties[difficulty])
+              acc.difficulties[difficulty] = [];
+            acc.difficulties[difficulty].push(question);
+
+            return acc;
+          },
+          { categories: {}, difficulties: {} } as QuestionsIndex
+        );
+
+      setQuestions(organizedData);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setFetchError(message || "Unknown error fetching questions");
+    }
+  };
 
   useEffect(() => {
-    fetch("https://opentdb.com/api.php?amount=50")
-      .then((response) => response.json())
-      .then((data) => {
-        const results = (data as { results?: Question[] })?.results || [];
-
-        const organizedData = results
-          .map((q: Question) => {
-            const questionText = q.question
-              ? decodeHtmlEntities(q.question)
-              : "";
-            return {
-              ...(q as Question),
-              question: questionText,
-            } as Question;
-          })
-          .reduce(
-            (acc: QuestionsIndex, question: Question) => {
-              const category = question.category || "";
-              const difficulty = question.difficulty || "";
-
-              if (!acc.categories[category]) acc.categories[category] = [];
-              acc.categories[category].push(question);
-
-              if (!acc.difficulties[difficulty])
-                acc.difficulties[difficulty] = [];
-              acc.difficulties[difficulty].push(question);
-
-              return acc;
-            },
-            { categories: {}, difficulties: {} } as QuestionsIndex,
-          );
-        setQuestions(organizedData);
-      });
+    fetchQuestions();
   }, []);
 
   const yAxisWidth = Math.max(
     ...Object.keys(questions.categories || {}).map((name) => name.length * 8),
-    100,
+    100
   );
 
   return (
@@ -164,6 +173,14 @@ function App() {
           />
         )}
         <section style={{ marginBottom: "30px", width: "80%" }}>
+          {fetchError && (
+            <div className="fetch-error-banner">
+              <div>Failed to load questions: {fetchError}</div>
+              <div>
+                <button onClick={() => fetchQuestions()}>Retry</button>
+              </div>
+            </div>
+          )}
           <h3>Filtered Questions</h3>
           <ul className="filtered-list">
             {selectedCategory
@@ -249,8 +266,8 @@ function App() {
                       difficulty === "easy"
                         ? "green"
                         : difficulty === "medium"
-                          ? "yellow"
-                          : "red"
+                        ? "yellow"
+                        : "red"
                     }
                   />
                 ))}

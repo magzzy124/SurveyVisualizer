@@ -1,13 +1,10 @@
-/* PopupTable.css */
-
 .popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  /* Use a translucent backdrop so underlying content is slightly visible */
-  background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,8 +12,8 @@
 }
 
 .popup-content {
-  background: #242424; /* match site background */
-  color: rgba(255, 255, 255, 0.87); /* match root text color */
+  background: #242424;
+  color: rgba(255, 255, 255, 0.87);
   border-radius: 8px;
   width: 90%;
   max-width: 600px;
@@ -36,11 +33,7 @@
   border: 1px solid rgba(255, 255, 255, 0.03);
   border-radius: 6px;
   padding: 12px;
-  background: linear-gradient(
-    180deg,
-    #2b2b2b 0%,
-    #272727 100%
-  ); /* slightly lighter than popup */
+  background: linear-gradient(180deg, #2b2b2b 0%, #272727 100%);
   transition: background-color 0.15s, transform 120ms;
 }
 
@@ -96,7 +89,6 @@ ul li {
   margin-bottom: 5px;
 }
 
-/* Answer reveal styles */
 .question-details ul {
   margin: 0;
   padding: 0;
@@ -108,27 +100,26 @@ ul li {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center; /* center the answer text */
+  justify-content: center;
   text-align: center;
 }
 
-/* Icon positioned to the left of the centered text */
 .question-details .answer::before {
   position: absolute;
   left: 10px;
   width: 1.2em;
   text-align: center;
   font-weight: 700;
-  content: ""; /* overridden by correct/incorrect rules when applicable */
+  content: "";
 }
 
 .question-details .answer.correct {
-  color: #b7f0c9; /* light green text */
+  color: #b7f0c9;
   background: rgba(11, 102, 35, 0.08);
   font-weight: 600;
 }
 .question-details .answer.incorrect {
-  color: #ffb3b3; /* light red text */
+  color: #ffb3b3;
   background: rgba(166, 0, 0, 0.08);
 }
 .question-details .answer.correct::before {
@@ -145,7 +136,7 @@ ul li {
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  background: #1f1f1f; /* slightly elevated dark button */
-  color: rgba(255, 255, 255, 0.92); /* strong readable text */
+  background: #1f1f1f;
+  color: rgba(255, 255, 255, 0.92);
   cursor: pointer;
 }

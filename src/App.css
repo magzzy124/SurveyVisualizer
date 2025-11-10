@@ -45,7 +45,6 @@ main {
   width: fit-content;
 }
 
-/* App header styling */
 .app-header {
   text-align: center;
   padding: 28px 20px;
@@ -71,8 +70,6 @@ main {
   font-size: 0.95rem;
 }
 
-/* Remove focus outline/box-shadow from Recharts SVG/chart wrapper so
-   clicking the chart doesn't show a white border in some browsers. */
 .recharts-wrapper,
 .recharts-wrapper *,
 .recharts-responsive-container,
@@ -87,10 +84,6 @@ svg:focus-visible,
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Prefer not to globally disable focus outlines for accessibility; this
-   targets only chart/visualization elements. */
-
-/* Styles for the filtered questions list */
 .filtered-list {
   list-style: none;
   margin: 0 auto;
@@ -99,9 +92,9 @@ svg:focus-visible,
   overflow: auto;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.03);
-  background: #242424; /* match site background */
+  background: #242424;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-  max-width: 680px; /* limit width so it doesn't get too wide */
+  max-width: 680px;
 }
 
 .filtered-item {
@@ -112,7 +105,7 @@ svg:focus-visible,
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   cursor: pointer;
   transition: background-color 150ms, transform 120ms;
-  background: #2b2b2b; /* slightly lighter than popup */
+  background: #2b2b2b;
 }
 .filtered-item:last-child {
   border-bottom: none;
@@ -128,16 +121,16 @@ svg:focus-visible,
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  background: #1f1f1f; /* badge slightly darker */
+  background: #1f1f1f;
   color: #e6eef8;
   font-weight: 700;
 }
 .filtered-item .question-text {
   flex: 1 1 auto;
   color: #e6eef8;
-  /* allow wrapped text but clamp to two lines to keep items tidy */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -145,7 +138,6 @@ svg:focus-visible,
   line-height: 1.25rem;
 }
 
-/* Nice thin custom scrollbar (dark) */
 .filtered-list::-webkit-scrollbar {
   width: 8px;
 }
@@ -157,7 +149,6 @@ svg:focus-visible,
   border-radius: 8px;
 }
 
-/* Category dropdown styling */
 .category-select {
   display: block;
   margin: 12px auto 0 auto;
@@ -166,7 +157,7 @@ svg:focus-visible,
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: #1f1f1f;
   color: rgba(255, 255, 255, 0.92);
-  max-width: 480px; /* limit how wide the dropdown becomes */
+  max-width: 480px;
   width: 100%;
   box-shadow: none;
 }
@@ -175,10 +166,8 @@ svg:focus-visible,
   box-shadow: 0 0 0 3px rgba(100, 103, 255, 0.12);
 }
 
-/* Custom chart tooltip styling */
 .custom-tooltip {
-  /* Use an opaque tooltip background to avoid translucency on hover */
-  background: #242424; /* match site background and keep it opaque */
+  background: #242424;
   border: 1px solid rgba(255, 255, 255, 0.04);
   color: #fff;
   padding: 10px 12px;
@@ -196,4 +185,26 @@ svg:focus-visible,
   font-weight: 700;
   font-size: 1.08rem;
   color: #e6eef8;
+}
+
+.fetch-error-banner {
+  max-width: 680px;
+  margin: 12px auto;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #3a1f1f;
+  color: #ffdede;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(255, 80, 80, 0.12);
+}
+.fetch-error-banner button {
+  background: #1f1f1f;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
