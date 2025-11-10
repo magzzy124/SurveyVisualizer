@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./PopupTable.css";
-
-interface Question {
-  question: string;
-  correct_answer: string;
-  incorrect_answers: string[];
-}
+import type { Question } from "../types/types";
+import decodeHtmlEntities from "../assets/utils/decodeHtmlEntities";
 
 interface PopupTableProps {
   questions: Question[];
   onClose: () => void;
   header?: string;
-  // optional initial expanded question index (useful when opening with a
-  // single question pre-expanded)
   initialExpandedIndex?: number;
 }
 
@@ -45,12 +39,6 @@ const PopupTable: React.FC<PopupTableProps> = ({
     }
   }, [initialExpandedIndex, questions.length]);
 
-  const decodeHtmlEntities = (text: string) => {
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = text;
-    return textarea.value;
-  };
-
   return (
     <div
       className="popup-overlay"
@@ -78,7 +66,7 @@ const PopupTable: React.FC<PopupTableProps> = ({
                       (answer, idx) => {
                         const decoded = decodeHtmlEntities(answer);
                         const correctDecoded = decodeHtmlEntities(
-                          q.correct_answer
+                          q.correct_answer,
                         );
                         const isCorrect = decoded === correctDecoded;
                         const isRevealed = !!revealed[index];
@@ -92,7 +80,7 @@ const PopupTable: React.FC<PopupTableProps> = ({
                             {decoded}
                           </li>
                         );
-                      }
+                      },
                     )}
                   </ul>
                   <button onClick={() => toggleReveal(index)}>

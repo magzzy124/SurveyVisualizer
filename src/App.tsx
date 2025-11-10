@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { Question, QuestionsIndex } from "./types/types";
 import "./App.css";
 import {
   BarChart,
@@ -11,25 +12,46 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import PopupTable from "./components/PopupTable";
+import decodeHtmlEntities from "./assets/utils/decodeHtmlEntities";
 
 function App() {
-  const [questions, setQuestions] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [popupData, setPopupData] = useState(null);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [popupHeader, setPopupHeader] = useState("");
+  const [questions, setQuestions] = useState<QuestionsIndex>({
+    categories: {},
+    difficulties: {},
+  });
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [popupData, setPopupData] = useState<Question[] | null>(null);
+  const [popupHeader, setPopupHeader] = useState<string>("");
   const [popupInitialExpandedIndex, setPopupInitialExpandedIndex] = useState<
     number | undefined
   >(undefined);
 
+  type TooltipEntry = { value?: number; payload?: { questions?: number } };
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: TooltipEntry[];
+    label?: string | number;
+  }) => {
+    if (!active || !payload || !payload.length) return null;
+    const value =
+      (payload[0] as TooltipEntry).value ??
+      (payload[0] as TooltipEntry).payload?.questions;
+    return (
+      <div className="custom-tooltip">
+        <div className="tooltip-label">{label}</div>
+        <div className="tooltip-value">{value} questions</div>
+      </div>
+    );
+  };
+
   useEffect(() => {
-    // Prevent layout shift when the popup opens by compensating for the
-    // scrollbar width. When overflow is hidden the scrollbar disappears and
-    // content can shift horizontally; add an equivalent right padding while
-    // popup is open and restore the original padding when closed.
+    // Prevent layout shift when the popup opens by compensating for the scrollbar width.
     const body = document.body;
-    if (isPopupOpen) {
-      // store original padding-right so we can restore it later
+    if (popupData != null) {
       body.dataset.originalPaddingRight = body.style.paddingRight || "";
       const scrollbarWidth =
         window.innerWidth - document.documentElement.clientWidth;
@@ -39,91 +61,76 @@ function App() {
       body.style.overflow = "hidden";
     } else {
       body.style.overflow = "auto";
-      // restore original padding-right
       if (body.dataset.originalPaddingRight !== undefined) {
         body.style.paddingRight = body.dataset.originalPaddingRight;
         delete body.dataset.originalPaddingRight;
       }
     }
-  }, [isPopupOpen]);
+  }, [popupData]);
 
-  const openPopup = (filterKey) => {
+  const openPopup = (filterKey?: string) => {
+    const key = filterKey ?? "";
     const filteredQuestions =
-      questions.categories?.[filterKey] ||
-      questions.difficulties?.[filterKey] ||
-      [];
+      questions.categories[key] || questions.difficulties[key] || [];
     setPopupData(filteredQuestions);
-    setPopupHeader(filterKey);
+    setPopupHeader(key || "");
     setPopupInitialExpandedIndex(undefined);
-    setIsPopupOpen(true);
   };
 
-  const openPopupForQuestion = (question) => {
+  const openPopupForQuestion = (question: Question) => {
     setPopupData([question]);
-    // use the question category as header when available
     setPopupHeader(question.category || "Question");
     setPopupInitialExpandedIndex(0);
-    setIsPopupOpen(true);
-  };
-
-  const closePopup = () => {
-    setPopupData(null);
-    setIsPopupOpen(false);
   };
 
   useEffect(() => {
     fetch("https://opentdb.com/api.php?amount=50")
       .then((response) => response.json())
       .then((data) => {
-        const decodeHtmlEntities = (text) => {
-          const textarea = document.createElement("textarea");
-          textarea.innerHTML = text;
-          return textarea.value;
-        };
+        const results = (data as { results?: Question[] })?.results || [];
 
-        const organizedData = data.results
-          .map((question) => {
-            question.question = decodeHtmlEntities(question.question); // Decode HTML entities in questions
-            return question;
+        const organizedData = results
+          .map((q: Question) => {
+            const questionText = q.question
+              ? decodeHtmlEntities(q.question)
+              : "";
+            return {
+              ...(q as Question),
+              question: questionText,
+            } as Question;
           })
           .reduce(
-            (acc, question) => {
-              question.category = decodeHtmlEntities(question.category);
-              if (!acc.categories[question.category]) {
-                acc.categories[question.category] = [];
-              }
-              acc.categories[question.category].push(question);
+            (acc: QuestionsIndex, question: Question) => {
+              const category = question.category || "";
+              const difficulty = question.difficulty || "";
 
-              if (!acc.difficulties[question.difficulty]) {
-                acc.difficulties[question.difficulty] = [];
-              }
-              acc.difficulties[question.difficulty].push(question);
+              if (!acc.categories[category]) acc.categories[category] = [];
+              acc.categories[category].push(question);
+
+              if (!acc.difficulties[difficulty])
+                acc.difficulties[difficulty] = [];
+              acc.difficulties[difficulty].push(question);
 
               return acc;
             },
-            { categories: {}, difficulties: {} }
+            { categories: {}, difficulties: {} } as QuestionsIndex,
           );
-        console.log(organizedData);
         setQuestions(organizedData);
       });
   }, []);
 
   const yAxisWidth = Math.max(
     ...Object.keys(questions.categories || {}).map((name) => name.length * 8),
-    100
+    100,
   );
 
   return (
     <div>
-      <header
-        style={{
-          textAlign: "center",
-          padding: "20px",
-          background: "#282c34",
-          color: "white",
-        }}
-      >
+      <header className="app-header">
         <h1>Survey Visualizer</h1>
+        <p className="subtitle">
+          Explore question distributions and inspect items
+        </p>
       </header>
       <div
         style={{
@@ -136,9 +143,9 @@ function App() {
         <section style={{ marginBottom: "30px", width: "80%" }}>
           <h2>Categories</h2>
           <select
+            className="category-select"
             onChange={(e) => setSelectedCategory(e.target.value)}
             value={selectedCategory}
-            style={{ padding: "10px", width: "100%", borderRadius: "5px" }}
           >
             <option value="">All</option>
             {Object.keys(questions.categories || {}).map((category) => (
@@ -148,10 +155,10 @@ function App() {
             ))}
           </select>
         </section>
-        {isPopupOpen && popupData && (
+        {popupData && (
           <PopupTable
             questions={popupData}
-            onClose={closePopup}
+            onClose={() => setPopupData(null)}
             header={popupHeader}
             initialExpandedIndex={popupInitialExpandedIndex}
           />
@@ -197,11 +204,15 @@ function App() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis dataKey="name" type="category" width={yAxisWidth} />
-              <Tooltip />
+              <Tooltip
+                content={<CustomTooltip />}
+                animationDuration={80}
+                animationEasing="ease-out"
+              />
               <Bar
                 dataKey="questions"
                 fill="#8884d8"
-                onClick={(data, index) => openPopup(data.name)}
+                onClick={(data) => openPopup((data as { name?: string })?.name)}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -222,8 +233,15 @@ function App() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
-              <Bar dataKey="questions" onClick={(data) => openPopup(data.name)}>
+              <Tooltip
+                content={<CustomTooltip />}
+                animationDuration={80}
+                animationEasing="ease-out"
+              />
+              <Bar
+                dataKey="questions"
+                onClick={(data) => openPopup((data as { name?: string })?.name)}
+              >
                 {["easy", "medium", "hard"].map((difficulty, index) => (
                   <Cell
                     key={`cell-${index}`}
@@ -231,8 +249,8 @@ function App() {
                       difficulty === "easy"
                         ? "green"
                         : difficulty === "medium"
-                        ? "yellow"
-                        : "red"
+                          ? "yellow"
+                          : "red"
                     }
                   />
                 ))}
